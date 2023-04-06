@@ -76,21 +76,17 @@ export const fragmentShader = `
     }
 
     varying vec3 vPosition;
+    uniform vec3 audioColor;
+    uniform float audioDataFactor;
 
     void main() {
-        float squashFactor = 0.5 * sin(time * 0.5) + 20.0;
+        float squashFactor = 0.5 * sin(audioDataFactor * 10.5) + 5.0;
         float noiseValue = noise(vPosition * squashFactor + vec3(0.0, 0.0, time * 0.5));
     
         float holeSize = 0.1;
         float holeMask = step(holeSize, noiseValue);
     
-        vec3 redColor = vec3(1.0, 0.0, 0.0);
-        vec3 purpleColor = vec3(0.5, 0.0, 1.0);
-    
-        float colorFactor = (sin(time) + 1.0) * 0.5; // Animate colorFactor smoothly between 0 and 1
-        vec3 finalColor = mix(redColor, purpleColor, colorFactor); // Interpolate between red and purple using colorFactor
-    
-        gl_FragColor = vec4(finalColor, holeMask);
+        gl_FragColor = vec4(audioColor, holeMask);
     }
 `
 
