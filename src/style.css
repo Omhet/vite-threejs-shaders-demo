@@ -37,3 +37,11 @@ h1 {
     font-size: 3.2em;
     line-height: 1.1;
 }
+
+.play {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    padding: 8px 16px;
+    font-size: 18px;
+}

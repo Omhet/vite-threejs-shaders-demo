@@ -5,6 +5,30 @@ import { fragmentShader } from './shaders/fragment'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
 
+// @ts-ignore
+const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+const audioBufferSource = audioContext.createBufferSource()
+const analyser = audioContext.createAnalyser()
+analyser.fftSize = 2048
+audioBufferSource.connect(analyser)
+
+const bufferLength = analyser.frequencyBinCount
+const dataArray = new Uint8Array(bufferLength)
+
+const playBtn = document.querySelector(`#play`)!
+
+playBtn.addEventListener('click', () => {
+    fetch('/audio.mp3')
+        .then((response) => response.arrayBuffer())
+        .then((data) => audioContext.decodeAudioData(data))
+        .then((buffer) => {
+            audioBufferSource.buffer = buffer
+            audioBufferSource.connect(audioContext.destination)
+            audioBufferSource.start()
+        })
+        .catch(console.error)
+})
+
 const CANVAS_ID = 'scene'
 
 // ===== 🖼️ CANVAS, RENDERER, & SCENE =====
@@ -26,6 +50,7 @@ const shaderMaterial = new ShaderMaterial({
     depthTest: true,
     uniforms: {
         time: { value: 0.0 },
+        audioDataFactor: { value: 0.0 },
     },
 })
 const geometry = new SphereGeometry(2, 32, 32)
@@ -42,10 +67,21 @@ cameraControls.autoRotateSpeed = 0.5
 cameraControls.enableZoom = false
 cameraControls.update()
 
+let smoothedAudioDataFactor = 0.0
+const smoothFactor = 0.1 // Adjust this value to control the smoothing speed (0.0 to 1.0)
+
 function animate() {
     requestAnimationFrame(animate)
 
-    // shaderMaterial.uniforms.time.value += 0.01
+    analyser.getByteTimeDomainData(dataArray)
+    const maxValue = Math.max(...dataArray)
+    const audioDataFactor = maxValue / 128.0 - 1.0
+
+    // Apply low-pass filter
+    smoothedAudioDataFactor += (audioDataFactor - smoothedAudioDataFactor) * smoothFactor
+
+    shaderMaterial.uniforms.audioDataFactor.value = smoothedAudioDataFactor
+
     // @ts-ignore
     mainSphere.material.uniforms.time.value = performance.now() / 1000
 
