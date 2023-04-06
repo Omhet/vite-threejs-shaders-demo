@@ -1,9 +1,34 @@
-import { Mesh, PerspectiveCamera, Scene, ShaderMaterial, SphereGeometry, WebGLRenderer } from 'three'
+import { MathUtils, Mesh, PerspectiveCamera, Scene, ShaderMaterial, SphereGeometry, WebGLRenderer } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import { fragmentShader } from './shaders/fragment'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
+
+class CustomGlitchPass extends GlitchPass {
+    constructor() {
+        super()
+    }
+
+    // @ts-ignore
+    render(renderer, writeBuffer, readBuffer, deltaTime, maskActive) {
+        // Increase the frame counter
+        this.curF += deltaTime
+
+        // Check if the random number is less than the frame counter
+        if (this.curF > this.randX) {
+            // Reset the frame counter and generate a new random number
+            this.curF = 0
+            this.randX = MathUtils.randInt(0, 0.001) // Change these values to control the frequency of the glitches
+        }
+
+        // Call the original GlitchPass render method
+        super.render(renderer, writeBuffer, readBuffer, deltaTime, maskActive)
+    }
+}
 
 const CANVAS_ID = 'scene'
 
@@ -42,6 +67,13 @@ cameraControls.autoRotateSpeed = 0.5
 cameraControls.enableZoom = false
 cameraControls.update()
 
+const composer = new EffectComposer(renderer)
+const renderPass = new RenderPass(scene, camera)
+composer.addPass(renderPass)
+
+// const glitchPass = new CustomGlitchPass()
+// composer.addPass(glitchPass)
+
 function animate() {
     requestAnimationFrame(animate)
 
@@ -57,7 +89,8 @@ function animate() {
 
     cameraControls.update()
 
-    renderer.render(scene, camera)
+    // renderer.render(scene, camera)
+    composer.render()
 }
 
 animate()
