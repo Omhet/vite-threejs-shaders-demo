@@ -29,7 +29,10 @@ playBtn.addEventListener('click', () => {
             audioBufferSource.connect(audioContext.destination)
             audioBufferSource.start()
         })
-        .catch(console.error)
+        .catch((error) => {
+            console.error(error)
+            document.body.innerHTML = 'Error ' + error
+        })
 })
 
 const CANVAS_ID = 'scene'
