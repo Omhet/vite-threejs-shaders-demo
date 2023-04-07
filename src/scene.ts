@@ -28,6 +28,7 @@ playBtn.addEventListener('click', () => {
             audioBufferSource.buffer = buffer
             audioBufferSource.connect(audioContext.destination)
             audioBufferSource.start()
+            document.body.innerHTML = 'Started'
         })
         .catch((error) => {
             console.error(error)
