@@ -19,10 +19,12 @@ const frequencyDataArray = new Uint8Array(bufferLength)
 const playBtn = document.querySelector(`#play`)!
 
 playBtn.addEventListener('click', () => {
+    playBtn.textContent = 'Loading...'
     fetch('/audio.mp3')
         .then((response) => response.arrayBuffer())
         .then((data) => audioContext.decodeAudioData(data))
         .then((buffer) => {
+            playBtn.classList.add('hidden')
             audioBufferSource.buffer = buffer
             audioBufferSource.connect(audioContext.destination)
             audioBufferSource.start()
