@@ -1,4 +1,15 @@
-import { Color, Mesh, PerspectiveCamera, Scene, ShaderMaterial, SphereGeometry, WebGLRenderer } from 'three'
+import {
+    AmbientLight,
+    Color,
+    Mesh,
+    MeshStandardMaterial,
+    PerspectiveCamera,
+    PointLight,
+    Scene,
+    SphereGeometry,
+    WebGLRenderer,
+} from 'three'
+import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import { fragmentShader } from './shaders/fragment'
@@ -48,22 +59,30 @@ const camera = new PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeigh
 camera.position.set(2, 2, 7)
 
 // ===== 📦 OBJECTS =====
-const shaderMaterial = new ShaderMaterial({
+
+const shaderMaterial = new CustomShaderMaterial({
+    baseMaterial: MeshStandardMaterial,
     vertexShader,
     fragmentShader,
-    transparent: true,
-    depthWrite: false,
-    depthTest: true,
     uniforms: {
         time: { value: 0.0 },
         audioDataFactor: { value: 0.0 },
         audioColor: { value: new Color(0xffffff) },
     },
+    transparent: true,
 })
+
 const geometry = new SphereGeometry(2, 32, 32)
 const mainSphere = new Mesh(geometry, shaderMaterial)
 
 scene.add(mainSphere)
+
+const pointLight = new PointLight(0xffffff, 1, 100)
+pointLight.position.set(5, 5, 5)
+scene.add(pointLight)
+
+const ambientLight = new AmbientLight(0x404040) // soft white light
+scene.add(ambientLight)
 
 // ===== 🕹️ CONTROLS =====
 const cameraControls = new OrbitControls(camera, canvas as HTMLElement)

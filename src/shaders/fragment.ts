@@ -86,8 +86,6 @@ export const fragmentShader = `
         float holeSize = 0.1;
         float holeMask = step(holeSize, noiseValue);
     
-        gl_FragColor = vec4(audioColor, holeMask);
+        csm_DiffuseColor = vec4(audioColor, holeMask);
     }
 `
-
-// vec3(82.0, 151.0, 70.0)

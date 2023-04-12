@@ -12,6 +12,6 @@ export const vertexShader = `
 
         vPosition = scaledPosition;
 
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(scaledPosition, 1.0);
+        csm_PositionRaw = projectionMatrix * modelViewMatrix * vec4(scaledPosition, 1.0);
     }
 `
