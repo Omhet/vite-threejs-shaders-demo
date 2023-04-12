@@ -1,14 +1,12 @@
 import {
     AmbientLight,
     Color,
-    DirectionalLight,
     Mesh,
     MeshStandardMaterial,
     PerspectiveCamera,
     PointLight,
     Scene,
     SphereGeometry,
-    SpotLight,
     WebGLRenderer,
 } from 'three'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
@@ -18,20 +16,20 @@ import { fragmentShader } from './shaders/fragment'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
 
-function goFullScreen() {
-    if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen()
-    } else if (document.documentElement.mozRequestFullScreen) {
-        // Firefox
-        document.documentElement.mozRequestFullScreen()
-    } else if (document.documentElement.webkitRequestFullscreen) {
-        // Chrome, Safari and Opera
-        document.documentElement.webkitRequestFullscreen()
-    } else if (document.documentElement.msRequestFullscreen) {
-        // IE/Edge
-        document.documentElement.msRequestFullscreen()
-    }
-}
+// function goFullScreen() {
+//     if (document.documentElement.requestFullscreen) {
+//         document.documentElement.requestFullscreen()
+//     } else if (document.documentElement.mozRequestFullScreen) {
+//         // Firefox
+//         document.documentElement.mozRequestFullScreen()
+//     } else if (document.documentElement.webkitRequestFullscreen) {
+//         // Chrome, Safari and Opera
+//         document.documentElement.webkitRequestFullscreen()
+//     } else if (document.documentElement.msRequestFullscreen) {
+//         // IE/Edge
+//         document.documentElement.msRequestFullscreen()
+//     }
+// }
 
 // @ts-ignore
 const audioContext = new (window.AudioContext || window.webkitAudioContext)()
@@ -96,34 +94,15 @@ const mainSphere = new Mesh(geometry, shaderMaterial)
 
 scene.add(mainSphere)
 
-// Create a directional light (like sunlight)
-const directionalLight = new DirectionalLight(0xffffff, 0.8)
-directionalLight.position.set(1, 2, 3)
-// scene.add(directionalLight)
+// Create a point light (like a light bulb) on the left
+const leftPointLight = new PointLight(0xffffff, 1, 100)
+leftPointLight.position.set(-5, 0, 0)
+scene.add(leftPointLight)
 
-// Create a point light (like a light bulb)
-const pointLight = new PointLight(0xffffff, 1, 100)
-pointLight.position.set(0, 5, 0)
-// scene.add(pointLight)
-
-// Create another point light (like a light bulb)
-const oppositePointLight = new PointLight(0xffffff, 1, 100)
-oppositePointLight.position.set(0, -5, 0)
-// scene.add(oppositePointLight)
-
-// Create a spotlight (like a stage light)
-const spotLight = new SpotLight(0xffffff, 1)
-spotLight.position.set(0, 0, -5)
-spotLight.target.position.set(0, 0, 0)
-scene.add(spotLight)
-// scene.add(spotLight.target)
-
-// Create the opposite stage light
-const oppositeStageLight = new SpotLight(0xffffff, 1)
-oppositeStageLight.position.set(0, 0, 5)
-oppositeStageLight.target.position.set(0, 0, 0)
-scene.add(oppositeStageLight)
-// scene.add(oppositeStageLight.target)
+// Create a point light (like a light bulb) on the right
+const rightPointLight = new PointLight(0xffffff, 1, 100)
+rightPointLight.position.set(5, 0, 0)
+scene.add(rightPointLight)
 
 // Create an ambient light for overall scene illumination
 const ambientLight = new AmbientLight(0xffffff, 1)
@@ -133,8 +112,8 @@ scene.add(ambientLight)
 const cameraControls = new OrbitControls(camera, canvas as HTMLElement)
 cameraControls.target = mainSphere.position.clone()
 cameraControls.enableDamping = true
-cameraControls.autoRotate = true
-cameraControls.autoRotateSpeed = 1.0
+// cameraControls.autoRotate = true
+// cameraControls.autoRotateSpeed = 1.0
 cameraControls.enableZoom = false
 cameraControls.update()
 
@@ -166,17 +145,12 @@ function animate() {
     const sma = 0.5 * Math.sin(smoothedAudioDataFactor * 3) + 0.1
     ambientLight.intensity = sma
 
-    const rotationSpeed = 10
-    spotLight.position.y = 5 + 3 * Math.sin(smoothedAudioDataFactor * rotationSpeed)
-    spotLight.position.x = 3 * Math.cos(smoothedAudioDataFactor * rotationSpeed)
-    oppositeStageLight.position.y = -5 - 3 * Math.sin(smoothedAudioDataFactor * rotationSpeed)
-    oppositeStageLight.position.x = -3 * Math.cos(smoothedAudioDataFactor * rotationSpeed)
-
-    spotLight.angle = Math.PI / 6 + 0.1 * smoothedAudioDataFactor
-    oppositeStageLight.angle = Math.PI / 4 + 0.1 * smoothedAudioDataFactor
-
     // @ts-ignore
     mainSphere.material.uniforms.time.value = performance.now() / 1000
+
+    mainSphere.rotation.x += 0.002
+    mainSphere.rotation.y += -0.002
+    mainSphere.rotation.z += 0.003
 
     if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement
