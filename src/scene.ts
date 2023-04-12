@@ -1,12 +1,14 @@
 import {
     AmbientLight,
     Color,
+    DirectionalLight,
     Mesh,
     MeshStandardMaterial,
     PerspectiveCamera,
     PointLight,
     Scene,
     SphereGeometry,
+    SpotLight,
     WebGLRenderer,
 } from 'three'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
@@ -39,6 +41,7 @@ playBtn.addEventListener('click', () => {
             audioBufferSource.buffer = buffer
             audioBufferSource.connect(audioContext.destination)
             audioBufferSource.start()
+            document.body.style.cursor = 'none'
         })
         .catch((error) => {
             console.error(error)
@@ -77,11 +80,37 @@ const mainSphere = new Mesh(geometry, shaderMaterial)
 
 scene.add(mainSphere)
 
-const pointLight = new PointLight(0xffffff, 1, 100)
-pointLight.position.set(5, 5, 5)
-scene.add(pointLight)
+// Create a directional light (like sunlight)
+const directionalLight = new DirectionalLight(0xffffff, 0.8)
+directionalLight.position.set(1, 2, 3)
+// scene.add(directionalLight)
 
-const ambientLight = new AmbientLight(0x404040) // soft white light
+// Create a point light (like a light bulb)
+const pointLight = new PointLight(0xffffff, 1, 100)
+pointLight.position.set(0, 5, 0)
+// scene.add(pointLight)
+
+// Create another point light (like a light bulb)
+const oppositePointLight = new PointLight(0xffffff, 1, 100)
+oppositePointLight.position.set(0, -5, 0)
+// scene.add(oppositePointLight)
+
+// Create a spotlight (like a stage light)
+const spotLight = new SpotLight(0xffffff, 1)
+spotLight.position.set(0, 0, -5)
+spotLight.target.position.set(0, 0, 0)
+scene.add(spotLight)
+// scene.add(spotLight.target)
+
+// Create the opposite stage light
+const oppositeStageLight = new SpotLight(0xffffff, 1)
+oppositeStageLight.position.set(0, 0, 5)
+oppositeStageLight.target.position.set(0, 0, 0)
+scene.add(oppositeStageLight)
+// scene.add(oppositeStageLight.target)
+
+// Create an ambient light for overall scene illumination
+const ambientLight = new AmbientLight(0xffffff, 1)
 scene.add(ambientLight)
 
 // ===== 🕹️ CONTROLS =====
@@ -117,6 +146,18 @@ function animate() {
     targetColor.setHSL(colorFactor * 0.7, 1.0, colorFactor * 0.7)
     const lerpFactor = 0.05 // Adjust this value to change the smoothness of the color transition
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
+
+    const sma = 0.5 * Math.sin(smoothedAudioDataFactor * 3) + 0.1
+    ambientLight.intensity = sma
+
+    const rotationSpeed = 10.5
+    spotLight.position.y = 5 + 3 * Math.sin(smoothedAudioDataFactor * rotationSpeed)
+    spotLight.position.x = 3 * Math.cos(smoothedAudioDataFactor * rotationSpeed)
+    oppositeStageLight.position.y = -5 - 3 * Math.sin(smoothedAudioDataFactor * rotationSpeed)
+    oppositeStageLight.position.x = -3 * Math.cos(smoothedAudioDataFactor * rotationSpeed)
+
+    spotLight.angle = Math.PI / 6 + 0.1 * smoothedAudioDataFactor
+    oppositeStageLight.angle = Math.PI / 4 + 0.1 * smoothedAudioDataFactor
 
     // @ts-ignore
     mainSphere.material.uniforms.time.value = performance.now() / 1000
