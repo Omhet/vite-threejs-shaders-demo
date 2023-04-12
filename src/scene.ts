@@ -18,6 +18,21 @@ import { fragmentShader } from './shaders/fragment'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
 
+function goFullScreen() {
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+    } else if (document.documentElement.mozRequestFullScreen) {
+        // Firefox
+        document.documentElement.mozRequestFullScreen()
+    } else if (document.documentElement.webkitRequestFullscreen) {
+        // Chrome, Safari and Opera
+        document.documentElement.webkitRequestFullscreen()
+    } else if (document.documentElement.msRequestFullscreen) {
+        // IE/Edge
+        document.documentElement.msRequestFullscreen()
+    }
+}
+
 // @ts-ignore
 const audioContext = new (window.AudioContext || window.webkitAudioContext)()
 const audioBufferSource = audioContext.createBufferSource()
@@ -42,6 +57,7 @@ playBtn.addEventListener('click', () => {
             audioBufferSource.connect(audioContext.destination)
             audioBufferSource.start()
             document.body.style.cursor = 'none'
+            // goFullScreen()
         })
         .catch((error) => {
             console.error(error)
@@ -150,7 +166,7 @@ function animate() {
     const sma = 0.5 * Math.sin(smoothedAudioDataFactor * 3) + 0.1
     ambientLight.intensity = sma
 
-    const rotationSpeed = 10.5
+    const rotationSpeed = 10
     spotLight.position.y = 5 + 3 * Math.sin(smoothedAudioDataFactor * rotationSpeed)
     spotLight.position.x = 3 * Math.cos(smoothedAudioDataFactor * rotationSpeed)
     oppositeStageLight.position.y = -5 - 3 * Math.sin(smoothedAudioDataFactor * rotationSpeed)
