@@ -110,8 +110,7 @@ scene.add(wall)
 
 const spotLight = new SpotLight(0xffffff, 1)
 spotLight.position.set(0, 0, 5)
-spotLight.target.position.set(0, 0, -5)
-spotLight.angle = Math.PI / 6
+spotLight.target.position.set(0, 0, 0)
 spotLight.penumbra = 0.5
 spotLight.layers.set(0)
 scene.add(spotLight)
@@ -244,24 +243,25 @@ function animate() {
     targetColor.setHSL(colorFactor, 1.0, colorFactor * 0.7 + 0.1)
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
 
-    smallTargetColor.setHSL(colorFactor, 1.0, colorFactor + 0.5)
+    const peakLightnessFactor = Math.pow(smoothedAudioDataFactor, 2) // Change the exponent to adjust the peak sensitivity
+    smallTargetColor.setHSL(colorFactor, 0.8, peakLightnessFactor * 1.4) // Add the peakLightnessFactor to the base lightness
+
     smallSphereMaterial.uniforms.audioColor.value.lerp(smallTargetColor, lerpFactor)
-    // smallSphereMaterial.color.copy(shaderMaterial.uniforms.audioColor.value)
 
     const intencity = Math.sin(smoothedAudioDataFactor * 3) + 0.5
     ambientLight.intensity = 0.5 * intencity
-    leftBottomSpotLight.intensity = intencity * 2
-    rightBottomSpotLight.intensity = intencity * 2
-    leftTopSpotLight.intensity = intencity * 2
-    rightTopSpotLight.intensity = intencity * 2
+    leftBottomSpotLight.intensity = intencity * 4
+    rightBottomSpotLight.intensity = intencity * 4
+    leftTopSpotLight.intensity = intencity * 4
+    rightTopSpotLight.intensity = intencity * 4
 
-    const minSpotAngle = Math.PI / 24
+    const minSpotAngle = Math.PI / 16
     const maxSpotAngle = Math.PI / 8
     const targetAngle = mapRange(smoothedAudioDataFactor, 0, 1, minSpotAngle, maxSpotAngle)
     smoothedSpotAngle += (targetAngle - smoothedSpotAngle) * angleSmoothFactor
     spotLight.angle = smoothedSpotAngle
     const spotIntensityFactor = mapRange(smoothedSpotAngle, minSpotAngle, maxSpotAngle, 0, 1)
-    spotLight.intensity = lerp(0, 5, spotIntensityFactor)
+    spotLight.intensity = lerp(2, 5, spotIntensityFactor)
 
     const minBigSpotAngle = Math.PI / 8
     const maxBigSpotAngle = Math.PI / 4
