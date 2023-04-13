@@ -55,7 +55,7 @@ const frequencyDataArray = new Uint8Array(bufferLength)
 const playBtn = document.querySelector(`#play`)!
 
 playBtn.addEventListener('click', () => {
-    playBtn.textContent = 'Loading...'
+    document.querySelector(`#play-text`)!.textContent = 'LOADING...'
     fetch('/audio.mp3')
         .then((response) => response.arrayBuffer())
         .then((data) => audioContext.decodeAudioData(data))
