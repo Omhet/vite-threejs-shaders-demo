@@ -4,6 +4,7 @@ import {
     Color,
     Layers,
     Mesh,
+    MeshBasicMaterial,
     MeshStandardMaterial,
     PCFSoftShadowMap,
     PerspectiveCamera,
@@ -17,6 +18,7 @@ import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import { lerp } from 'three/src/math/MathUtils'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import { fragmentShader } from './shaders/fragment'
+import { fragmentShaderBase } from './shaders/fragment-base'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
 
@@ -150,6 +152,23 @@ rightTopSpotLight.penumbra = 0.1
 rightTopSpotLight.layers.set(0)
 scene.add(rightTopSpotLight)
 
+/// MAIN OBJECTS
+
+const smallSphereGeometry = new SphereGeometry(0.8, 32, 32)
+const smallSphereMaterial = new CustomShaderMaterial({
+    baseMaterial: MeshBasicMaterial,
+    vertexShader,
+    fragmentShader: fragmentShaderBase,
+    uniforms: {
+        time: { value: 0.0 },
+        audioDataFactor: { value: 0.0 },
+        audioColor: { value: new Color(0xffffff) },
+    },
+})
+const smallSphere = new Mesh(smallSphereGeometry, smallSphereMaterial)
+smallSphere.position.set(0, 0, 0)
+scene.add(smallSphere)
+
 const shaderMaterial = new CustomShaderMaterial({
     baseMaterial: MeshStandardMaterial,
     vertexShader,
@@ -190,6 +209,8 @@ let smoothedAudioDataFactor = 0.0
 const smoothFactor = 0.06 // Adjust this value to control the smoothing speed (0.0 to 1.0)
 
 let targetColor = new Color(0xffffff)
+let smallTargetColor = new Color(0xffffff)
+const lerpFactor = 0.05 // Adjust this value to change the smoothness of the color transition
 
 let smoothedSpotAngle = Math.PI / 6 // Initialize to the starting angle
 let smoothedBigAngle = Math.PI / 6 // Initialize to the starting angle
@@ -207,13 +228,19 @@ function animate() {
 
     shaderMaterial.uniforms.audioDataFactor.value = smoothedAudioDataFactor
 
+    smallSphereMaterial.uniforms.audioDataFactor.value = smoothedAudioDataFactor * 2
+
     analyser.getByteFrequencyData(frequencyDataArray)
     const lowFrequencyValue = frequencyDataArray[frequencyDataArray.length - 1] / 255.0
     const highFrequencyValue = frequencyDataArray[0] / 255.0
     const colorFactor = highFrequencyValue - lowFrequencyValue
+
     targetColor.setHSL(colorFactor, 1.0, colorFactor * 0.7 + 0.1)
-    const lerpFactor = 0.05 // Adjust this value to change the smoothness of the color transition
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
+
+    smallTargetColor.setHSL(colorFactor, 1.0, colorFactor + 0.5)
+    smallSphereMaterial.uniforms.audioColor.value.lerp(smallTargetColor, lerpFactor)
+    // smallSphereMaterial.color.copy(shaderMaterial.uniforms.audioColor.value)
 
     const intencity = Math.sin(smoothedAudioDataFactor * 3) + 0.5
     ambientLight.intensity = 0.5 * intencity
@@ -228,7 +255,7 @@ function animate() {
     smoothedSpotAngle += (targetAngle - smoothedSpotAngle) * angleSmoothFactor
     spotLight.angle = smoothedSpotAngle
     const spotIntensityFactor = mapRange(smoothedSpotAngle, minSpotAngle, maxSpotAngle, 0, 1)
-    spotLight.intensity = lerp(1, 5, spotIntensityFactor)
+    spotLight.intensity = lerp(0, 5, spotIntensityFactor)
 
     const minBigSpotAngle = Math.PI / 8
     const maxBigSpotAngle = Math.PI / 4
@@ -249,11 +276,17 @@ function animate() {
     rightTopSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
 
     // @ts-ignore
-    mainSphere.material.uniforms.time.value = performance.now() / 1000
+    const time = performance.now() / 1000
+    mainSphere.material.uniforms.time.value = time
+    smallSphere.material.uniforms.time.value = time
 
     mainSphere.rotation.x += 0.002
     mainSphere.rotation.y += -0.002
     mainSphere.rotation.z += 0.003
+
+    smallSphere.rotation.x += 0.003
+    smallSphere.rotation.y += -0.002
+    smallSphere.rotation.z += 0.002
 
     if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement

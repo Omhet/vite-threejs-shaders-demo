@@ -28,6 +28,7 @@ h1 {
         'Open Sans', 'Helvetica Neue', sans-serif;
     position: absolute;
     inset: 0;
+    border: 0;
     font-size: 48px;
     display: flex;
     align-items: center;
@@ -36,6 +37,10 @@ h1 {
     color: whitesmoke;
     transition: all 0.4s ease-in-out;
     cursor: pointer;
+}
+
+.play div {
+    padding-top: 50vh;
 }
 
 .play.hidden {
