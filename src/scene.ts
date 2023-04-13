@@ -14,10 +14,15 @@ import {
     WebGLRenderer,
 } from 'three'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
+import { lerp } from 'three/src/math/MathUtils'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import { fragmentShader } from './shaders/fragment'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
+
+function mapRange(value: number, inputMin: number, inputMax: number, outputMin: number, outputMax: number) {
+    return outputMin + ((outputMax - outputMin) * (value - inputMin)) / (inputMax - inputMin)
+}
 
 // function goFullScreen() {
 //     if (document.documentElement.requestFullscreen) {
@@ -104,6 +109,15 @@ spotLight.layers.set(0)
 scene.add(spotLight)
 scene.add(spotLight.target)
 
+const bigSpotLight = new SpotLight(0xffffff, 1)
+bigSpotLight.position.set(0, 0, 5)
+bigSpotLight.target.position.set(0, 0, -5)
+bigSpotLight.angle = Math.PI / 6
+bigSpotLight.penumbra = 0.5
+bigSpotLight.layers.set(0)
+scene.add(bigSpotLight)
+scene.add(bigSpotLight.target)
+
 const leftBottomSpotLight = new SpotLight(0xffffff, 1)
 leftBottomSpotLight.position.set(-150, -150, 5)
 leftBottomSpotLight.target.position.copy(spotLight.target.position)
@@ -177,6 +191,10 @@ const smoothFactor = 0.06 // Adjust this value to control the smoothing speed (0
 
 let targetColor = new Color(0xffffff)
 
+let smoothedSpotAngle = Math.PI / 6 // Initialize to the starting angle
+let smoothedBigAngle = Math.PI / 6 // Initialize to the starting angle
+const angleSmoothFactor = 0.1 // Adjust this value to control the smoothing speed (0.0 to 1.0)
+
 function animate() {
     requestAnimationFrame(animate)
 
@@ -197,18 +215,34 @@ function animate() {
     const lerpFactor = 0.05 // Adjust this value to change the smoothness of the color transition
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
 
-    const sma = Math.sin(smoothedAudioDataFactor * 3) + 0.5
-    // ambientLight.intensity = 0.5 * sma
-    spotLight.intensity = 4 * sma
-    leftBottomSpotLight.intensity = sma
-    rightBottomSpotLight.intensity = sma
-    leftTopSpotLight.intensity = sma
-    rightTopSpotLight.intensity = sma
+    const intencity = Math.sin(smoothedAudioDataFactor * 3) + 0.5
+    ambientLight.intensity = 0.5 * intencity
+    leftBottomSpotLight.intensity = intencity * 2
+    rightBottomSpotLight.intensity = intencity * 2
+    leftTopSpotLight.intensity = intencity * 2
+    rightTopSpotLight.intensity = intencity * 2
 
-    // ambientLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    const minSpotAngle = Math.PI / 24
+    const maxSpotAngle = Math.PI / 8
+    const targetAngle = mapRange(smoothedAudioDataFactor, 0, 1, minSpotAngle, maxSpotAngle)
+    smoothedSpotAngle += (targetAngle - smoothedSpotAngle) * angleSmoothFactor
+    spotLight.angle = smoothedSpotAngle
+    const spotIntensityFactor = mapRange(smoothedSpotAngle, minSpotAngle, maxSpotAngle, 0, 1)
+    spotLight.intensity = lerp(1, 5, spotIntensityFactor)
+
+    const minBigSpotAngle = Math.PI / 8
+    const maxBigSpotAngle = Math.PI / 4
+    const targetBigSpotAngle = mapRange(smoothedAudioDataFactor, 0, 1, minBigSpotAngle, maxBigSpotAngle)
+    smoothedBigAngle += (targetBigSpotAngle - smoothedBigAngle) * angleSmoothFactor
+    bigSpotLight.angle = smoothedBigAngle
+    const intensityFactor = mapRange(smoothedBigAngle, minBigSpotAngle, maxBigSpotAngle, 0, 1)
+    bigSpotLight.intensity = lerp(0, 1, intensityFactor)
+
+    ambientLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     leftPointLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     rightPointLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     spotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    bigSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     leftBottomSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     rightBottomSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     leftTopSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
