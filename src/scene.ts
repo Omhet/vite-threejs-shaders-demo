@@ -18,7 +18,6 @@ import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import { lerp } from 'three/src/math/MathUtils'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import { fragmentShader } from './shaders/fragment'
-import { fragmentShaderBase } from './shaders/fragment-base'
 import { vertexShader } from './shaders/vertex'
 import './style.css'
 
@@ -71,7 +70,7 @@ playBtn.addEventListener('click', () => {
             audioBufferSource.connect(audioContext.destination)
             audioBufferSource.start()
             document.body.style.cursor = 'none'
-            // goFullScreen()
+            goFullScreen()
         })
         .catch((error) => {
             console.error(error)
@@ -163,12 +162,15 @@ const smallSphereGeometry = new SphereGeometry(0.8, 32, 32)
 const smallSphereMaterial = new CustomShaderMaterial({
     baseMaterial: MeshBasicMaterial,
     vertexShader,
-    fragmentShader: fragmentShaderBase,
+    fragmentShader,
     uniforms: {
         time: { value: 0.0 },
+        holeSizeFactor: { value: 1000.0 },
+        holeSize: { value: 0.1 },
         audioDataFactor: { value: 0.0 },
         audioColor: { value: new Color(0xffffff) },
     },
+    transparent: true,
 })
 const smallSphere = new Mesh(smallSphereGeometry, smallSphereMaterial)
 smallSphere.position.set(0, 0, 0)
@@ -179,6 +181,8 @@ const shaderMaterial = new CustomShaderMaterial({
     vertexShader,
     fragmentShader,
     uniforms: {
+        holeSizeFactor: { value: 5.0 },
+        holeSize: { value: 0.1 },
         time: { value: 0.0 },
         audioDataFactor: { value: 0.0 },
         audioColor: { value: new Color(0xffffff) },
@@ -234,6 +238,10 @@ function animate() {
     shaderMaterial.uniforms.audioDataFactor.value = smoothedAudioDataFactor
 
     smallSphereMaterial.uniforms.audioDataFactor.value = smoothedAudioDataFactor * 2
+    // smallSphereMaterial.uniforms.holeSizeFactor.value = mapRange(smoothedAudioDataFactor, 0.5, 1, 5, 100)
+
+    shaderMaterial.uniforms.holeSize.value = mapRange(smoothedAudioDataFactor, 0, 1, 0.4, 0.1)
+    smallSphereMaterial.uniforms.holeSize.value = mapRange(smoothedAudioDataFactor, 0, 1, 0.4, 0)
 
     analyser.getByteFrequencyData(frequencyDataArray)
     const lowFrequencyValue = frequencyDataArray[frequencyDataArray.length - 1] / 255.0

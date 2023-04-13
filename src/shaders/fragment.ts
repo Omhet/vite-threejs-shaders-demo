@@ -78,12 +78,13 @@ export const fragmentShader = `
     varying vec3 vPosition;
     uniform vec3 audioColor;
     uniform float audioDataFactor;
+    uniform float holeSizeFactor;
+    uniform float holeSize;
 
     void main() {
-        float squashFactor = 0.5 * sin(audioDataFactor * 10.5) + 5.0;
+        float squashFactor = 0.5 * sin(audioDataFactor * 10.5) + holeSizeFactor;
         float noiseValue = noise(vPosition * squashFactor + vec3(0.0, 0.0, time * 0.5));
     
-        float holeSize = 0.1;
         float holeMask = step(holeSize, noiseValue);
     
         csm_DiffuseColor = vec4(audioColor, holeMask);
