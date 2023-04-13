@@ -244,8 +244,7 @@ function animate() {
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
 
     const peakLightnessFactor = Math.pow(smoothedAudioDataFactor, 2) // Change the exponent to adjust the peak sensitivity
-    smallTargetColor.setHSL(colorFactor, 0.8, peakLightnessFactor * 1.4) // Add the peakLightnessFactor to the base lightness
-
+    smallTargetColor.setHSL(colorFactor, 1.0, peakLightnessFactor * 1.8) // Add the peakLightnessFactor to the base lightness
     smallSphereMaterial.uniforms.audioColor.value.lerp(smallTargetColor, lerpFactor)
 
     const intencity = Math.sin(smoothedAudioDataFactor * 3) + 0.5
