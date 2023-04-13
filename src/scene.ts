@@ -26,20 +26,26 @@ function mapRange(value: number, inputMin: number, inputMax: number, outputMin: 
     return outputMin + ((outputMax - outputMin) * (value - inputMin)) / (inputMax - inputMin)
 }
 
-// function goFullScreen() {
-//     if (document.documentElement.requestFullscreen) {
-//         document.documentElement.requestFullscreen()
-//     } else if (document.documentElement.mozRequestFullScreen) {
-//         // Firefox
-//         document.documentElement.mozRequestFullScreen()
-//     } else if (document.documentElement.webkitRequestFullscreen) {
-//         // Chrome, Safari and Opera
-//         document.documentElement.webkitRequestFullscreen()
-//     } else if (document.documentElement.msRequestFullscreen) {
-//         // IE/Edge
-//         document.documentElement.msRequestFullscreen()
-//     }
-// }
+function goFullScreen() {
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+        // @ts-ignore
+    } else if (document.documentElement.mozRequestFullScreen) {
+        // Firefox
+        // @ts-ignore
+        document.documentElement.mozRequestFullScreen()
+        // @ts-ignore
+    } else if (document.documentElement.webkitRequestFullscreen) {
+        // Chrome, Safari and Opera
+        // @ts-ignore
+        document.documentElement.webkitRequestFullscreen()
+        // @ts-ignore
+    } else if (document.documentElement.msRequestFullscreen) {
+        // IE/Edge
+        // @ts-ignore
+        document.documentElement.msRequestFullscreen()
+    }
+}
 
 // @ts-ignore
 const audioContext = new (window.AudioContext || window.webkitAudioContext)()
