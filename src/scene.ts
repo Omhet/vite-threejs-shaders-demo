@@ -97,14 +97,44 @@ scene.add(wall)
 
 const spotLight = new SpotLight(0xffffff, 1)
 spotLight.position.set(0, 0, 5)
-spotLight.target.position.set(0, 0, -5) // Point the spotlight towards the camera
+spotLight.target.position.set(0, 0, -5)
 spotLight.angle = Math.PI / 6
 spotLight.penumbra = 0.5
-spotLight.castShadow = true
 spotLight.layers.set(0)
-// spotLight.intensity = 10
 scene.add(spotLight)
 scene.add(spotLight.target)
+
+const leftBottomSpotLight = new SpotLight(0xffffff, 1)
+leftBottomSpotLight.position.set(-150, -150, 5)
+leftBottomSpotLight.target.position.copy(spotLight.target.position)
+leftBottomSpotLight.angle = Math.PI / 4
+leftBottomSpotLight.penumbra = 0.1
+leftBottomSpotLight.layers.set(0)
+scene.add(leftBottomSpotLight)
+
+const rightBottomSpotLight = new SpotLight(0xffffff, 1)
+rightBottomSpotLight.position.set(150, -150, 5)
+rightBottomSpotLight.target.position.copy(spotLight.target.position)
+rightBottomSpotLight.angle = Math.PI / 4
+rightBottomSpotLight.penumbra = 0.1
+rightBottomSpotLight.layers.set(0)
+scene.add(rightBottomSpotLight)
+
+const leftTopSpotLight = new SpotLight(0xffffff, 1)
+leftTopSpotLight.position.set(-150, 150, 5)
+leftTopSpotLight.target.position.copy(spotLight.target.position)
+leftTopSpotLight.angle = Math.PI / 4
+leftTopSpotLight.penumbra = 0.1
+leftTopSpotLight.layers.set(0)
+scene.add(leftTopSpotLight)
+
+const rightTopSpotLight = new SpotLight(0xffffff, 1)
+rightTopSpotLight.position.set(150, 150, 5)
+rightTopSpotLight.target.position.copy(spotLight.target.position)
+rightTopSpotLight.angle = Math.PI / 4
+rightTopSpotLight.penumbra = 0.1
+rightTopSpotLight.layers.set(0)
+scene.add(rightTopSpotLight)
 
 const shaderMaterial = new CustomShaderMaterial({
     baseMaterial: MeshStandardMaterial,
@@ -125,23 +155,20 @@ mainSphere.layers.set(1)
 
 scene.add(mainSphere)
 
-// Create a point light (like a light bulb) on the left
 const leftPointLight = new PointLight(0xffffff, 1, 100)
 leftPointLight.position.set(-5, 0, 0)
 leftPointLight.layers.set(1)
 scene.add(leftPointLight)
 
-// Create a point light (like a light bulb) on the right
 const rightPointLight = new PointLight(0xffffff, 1, 100)
 rightPointLight.position.set(5, 0, 0)
 rightPointLight.layers.set(1)
 scene.add(rightPointLight)
 
-// Create an ambient light for overall scene illumination
 const ambientLight = new AmbientLight(0xffffff, 1)
-ambientLight.layers.enable(1) // Enable the ambient light to affect layer 1
-ambientLight.layers.disable(0) // Enable the ambient light to affect layer 1
-scene.add(ambientLight)
+ambientLight.layers.enable(1)
+ambientLight.layers.disable(0)
+// scene.add(ambientLight)
 
 // ===== 🕹️ ANIMATE =====
 
@@ -166,18 +193,26 @@ function animate() {
     const lowFrequencyValue = frequencyDataArray[frequencyDataArray.length - 1] / 255.0
     const highFrequencyValue = frequencyDataArray[0] / 255.0
     const colorFactor = highFrequencyValue - lowFrequencyValue
-    targetColor.setHSL(colorFactor * 0.7, 1.0, colorFactor * 0.8)
+    targetColor.setHSL(colorFactor, 1.0, colorFactor * 0.7 + 0.1)
     const lerpFactor = 0.05 // Adjust this value to change the smoothness of the color transition
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
 
-    const sma = 0.5 * Math.sin(smoothedAudioDataFactor * 3) + 0.5
-    ambientLight.intensity = sma
-    spotLight.intensity = 5 * Math.sin(smoothedAudioDataFactor * 3) + 0.5
+    const sma = Math.sin(smoothedAudioDataFactor * 3) + 0.5
+    // ambientLight.intensity = 0.5 * sma
+    spotLight.intensity = 4 * sma
+    leftBottomSpotLight.intensity = sma
+    rightBottomSpotLight.intensity = sma
+    leftTopSpotLight.intensity = sma
+    rightTopSpotLight.intensity = sma
 
-    ambientLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    // ambientLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     leftPointLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     rightPointLight.color.copy(shaderMaterial.uniforms.audioColor.value)
     spotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    leftBottomSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    rightBottomSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    leftTopSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    rightTopSpotLight.color.copy(shaderMaterial.uniforms.audioColor.value)
 
     // @ts-ignore
     mainSphere.material.uniforms.time.value = performance.now() / 1000
