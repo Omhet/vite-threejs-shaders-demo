@@ -142,8 +142,11 @@ function animate() {
     const lerpFactor = 0.05 // Adjust this value to change the smoothness of the color transition
     shaderMaterial.uniforms.audioColor.value.lerp(targetColor, lerpFactor)
 
-    const sma = 0.5 * Math.sin(smoothedAudioDataFactor * 3) + 0.1
-    ambientLight.intensity = sma
+    ambientLight.intensity = 0.5 * Math.sin(smoothedAudioDataFactor * 3) + 0.5
+
+    ambientLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    leftPointLight.color.copy(shaderMaterial.uniforms.audioColor.value)
+    rightPointLight.color.copy(shaderMaterial.uniforms.audioColor.value)
 
     // @ts-ignore
     mainSphere.material.uniforms.time.value = performance.now() / 1000
